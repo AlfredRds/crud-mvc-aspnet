@@ -1,0 +1,38 @@
+name: Publicar .NET Framework Manualmente
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: 'Número de compilación'
+        required: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restaurar paquetes NuGet
+        run: nuget restore crud_mvc_aspnet.sln
+
+      - name: Compilar y publicar en carpeta
+        run: msbuild crud/crud.csproj /p:Configuration=Release /p:DeployOnBuild=true /p:PublishDir=publish_output\
+
+      - name: Comprimir contenido publicado
+        run: Compress-Archive -Path publish_output\* -DestinationPath build-${{ github.event.inputs.build_number }}.zip
+        shell: pwsh
+
+      - name: Crear Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.event.inputs.build_number }}
+          name: Build ${{ github.event.inputs.build_number }}
+          files: build-${{ github.event.inputs.build_number }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
