@@ -18,16 +18,13 @@ jobs:
       sdkSystemPath: 'C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework'
 
     steps:
-      - name: Install .net framework 4.5 SDK
+      - name: Install .NET Framework 4.5 SDK
         shell: pwsh
         run: |
-          echo "download ${env:net45SdkUrl}"
+          echo "Descargando ${env:net45SdkUrl}"
           Invoke-WebRequest -Uri "${env:net45SdkUrl}" -OutFile "${env:temp}\net45sdk.zip"
-          echo "unzip net45sdk.zip"
           Expand-Archive -Force -LiteralPath "${env:temp}\net45sdk.zip" -DestinationPath "${env:temp}\net45sdk"
-          echo "delete ${env:sdkSystemPath}\v4.5"
           [IO.Directory]::Delete("${env:sdkSystemPath}\v4.5", $True)
-          echo "move SDK to ${env:sdkSystemPath}\v4.5"
           Move-Item -Force -LiteralPath "${env:temp}\net45sdk\build\.NETFramework\v4.5" -Destination "${env:sdkSystemPath}"
 
       - name: Clonar repositorio
@@ -40,10 +37,10 @@ jobs:
         run: nuget restore ${env:slnName}.sln
 
       - name: Compilar y publicar en carpeta
-        run: msbuild ${env:projName}.csproj /p:Configuration=${env:buildCfg} /p:DeployOnBuild=true /p:PublishDir=publish_output\
+        run: msbuild ${env:projName}.csproj /p:Configuration=${env:buildCfg} /p:DeployOnBuild=true /p:PackageLocation=obj\Release\Package
 
-      - name: Copiar archivo .zip generado por el build
-        run: Copy-Item "crud/obj/Release/Package/crud.zip" "build-${{ github.event.inputs.build_number }}.zip"
+      - name: Comprimir contenido de PackageTmp
+        run: Compress-Archive -Path "crud/obj/Release/Package/PackageTmp/*" -DestinationPath "build-${{ github.event.inputs.build_number }}.zip"
         shell: pwsh
 
       - name: Crear Release
