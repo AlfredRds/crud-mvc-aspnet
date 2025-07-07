@@ -42,8 +42,8 @@ jobs:
       - name: Compilar y publicar en carpeta
         run: msbuild ${env:projName}.csproj /p:Configuration=${env:buildCfg} /p:DeployOnBuild=true /p:PublishDir=publish_output\
 
-      - name: Comprimir contenido publicado
-        run: Compress-Archive -Path publish_output\* -DestinationPath build-${{ github.event.inputs.build_number }}.zip
+      - name: Copiar archivo .zip generado por el build
+        run: Copy-Item "crud/obj/Release/Package/crud.zip" "build-${{ github.event.inputs.build_number }}.zip"
         shell: pwsh
 
       - name: Crear Release
