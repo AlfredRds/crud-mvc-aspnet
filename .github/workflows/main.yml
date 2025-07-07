@@ -12,7 +12,8 @@ jobs:
     runs-on: windows-latest
     env:
       slnName: crud_mvc_aspnet
-      projName: crud/crud.csproj
+      projRoute: crud/crud.csproj
+      projName: crud
       buildCfg: Release
       net45SdkUrl: 'https://www.nuget.org/api/v2/package/Microsoft.NETFramework.ReferenceAssemblies.net45/1.0.3'
       sdkSystemPath: 'C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework'
@@ -37,10 +38,10 @@ jobs:
         run: nuget restore ${env:slnName}.sln
 
       - name: Compilar y publicar en carpeta
-        run: msbuild ${env:projName}.csproj /p:Configuration=${env:buildCfg} /p:DeployOnBuild=true /p:PackageLocation=obj\Release\Package
+        run: msbuild ${env:projRoute}.csproj /p:Configuration=${env:buildCfg} /p:DeployOnBuild=true /p:PackageLocation=obj\Release\Package
 
       - name: Comprimir contenido de PackageTmp
-        run: Compress-Archive -Path "crud/obj/Release/Package/PackageTmp/*" -DestinationPath "build-${{ github.event.inputs.build_number }}.zip"
+        run: Compress-Archive -Path "${env:projName}/obj/Release/Package/PackageTmp/*" -DestinationPath "build-${{ github.event.inputs.build_number }}.zip"
         shell: pwsh
 
       - name: Crear Release
