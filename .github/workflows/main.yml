@@ -11,7 +11,8 @@ jobs:
   build:
     runs-on: windows-latest
     env:
-      projName: net45action
+      slnName: crud_mvc_aspnet
+      projName: crud/crud.csproj
       buildCfg: Release
       net45SdkUrl: 'https://www.nuget.org/api/v2/package/Microsoft.NETFramework.ReferenceAssemblies.net45/1.0.3'
       sdkSystemPath: 'C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework'
@@ -36,10 +37,10 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Restaurar paquetes NuGet
-        run: nuget restore crud_mvc_aspnet.sln
+        run: nuget restore ${env:slnName}.sln
 
       - name: Compilar y publicar en carpeta
-        run: msbuild crud/crud.csproj /p:Configuration=Release /p:DeployOnBuild=true /p:PublishDir=publish_output\
+        run: msbuild ${env:projName}.csproj /p:Configuration=${env:buildCfg} /p:DeployOnBuild=true /p:PublishDir=publish_output\
 
       - name: Comprimir contenido publicado
         run: Compress-Archive -Path publish_output\* -DestinationPath build-${{ github.event.inputs.build_number }}.zip
